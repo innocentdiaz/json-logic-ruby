@@ -2,13 +2,12 @@ require 'minitest/autorun'
 require 'minitest/pride'
 
 require 'json'
-require 'open-uri'
 
 require 'json_logic'
 
 class JSONLogicTest < Minitest::Test
-  test_suite_url = 'http://jsonlogic.com/tests.json'
-  tests = JSON.parse(open(test_suite_url).read)
+  fixture_path = File.expand_path('../fixtures/tests.json', __FILE__)
+  tests = JSON.parse(File.read(fixture_path))
   count = 1
   tests.each do |pattern|
     next unless pattern.is_a?(Array)

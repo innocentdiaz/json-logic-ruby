@@ -2,7 +2,9 @@ module JSONLogic
   ITERABLE_KEY = "".freeze
 
   class Operation
-    LAMBDAS = {
+    CUSTOM_OPERATIONS = {}
+
+  LAMBDAS = {
       'var' => ->(v, d) do
         if !(d.is_a?(Hash) || d.is_a?(Array))
           d
@@ -132,7 +134,13 @@ module JSONLogic
       interpolated.flatten!(1) if interpolated.size == 1           # [['A']] => ['A']
 
       return LAMBDAS[operator.to_s].call(interpolated, data) if is_standard?(operator)
-      send(operator, interpolated, data)
+
+      op_str = operator.to_s
+      if CUSTOM_OPERATIONS.key?(op_str)
+        return CUSTOM_OPERATIONS[op_str].call(interpolated, data)
+      end
+
+      raise ArgumentError, "Unknown JSONLogic operator: #{op_str.inspect}"
     end
 
     def self.is_standard?(operator)
@@ -146,9 +154,7 @@ module JSONLogic
     end
 
     def self.add_operation(operator, function)
-      self.class.send(:define_method, operator) do |v, d|
-        function.call(v, d)
-      end
+      CUSTOM_OPERATIONS[operator.to_s] = function
     end
   end
 end
